@@ -2,6 +2,7 @@ from logging import root
 from tkinter import GROOVE, SUNKEN, Canvas, Tk,Frame ,LAST, ttk, Button
 from math import cos, sin, radians, pi
 import random
+from turtle import pos
 from typing import Text
 
 from tkinter import PhotoImage
@@ -14,6 +15,12 @@ global colorNegro
 colorNegro = '#090909'
 global colorAzul
 colorAzul = '#0853B3'
+global colorCeleste
+colorCeleste = '#D7DEF5'
+global colorAmarilloClaro
+colorAmarilloClaro = '#EBFF91'
+global colorVerdeClaro
+colorVerdeClaro = '#C4FFB2'
 
 #Dimensiones
 global ancho_ventana
@@ -22,6 +29,11 @@ global alto_ventana
 alto_ventana = 650
 global heightSubFrames
 heightSubFrames = 450
+
+#Posiciones
+global posicionFrames
+posicionFrames = (0,200)
+
 
  
 class Modelos: 
@@ -54,87 +66,147 @@ def cargarImg(root, file, size: tuple, place: tuple):
     panel=ttk.Label(root,image=img)
     panel.image = img
     panel.place(x=place[0],y=place[1])
+
     
 
-def mainInterfaz():
+class Interfaz:
 
-    def mostrarDatosHistoricos():
+    def __init__(self):
+        #self.ventana = Tk()
+        #self.dibujar()
+        
+        self.frameDatosHistoricos = None       
+        self.frameEntrenamientoRed = None
+        self.framePrediccion = None
+        self.dibujar()
+       
+
+    def nada(self):
         pass
-    def ocultarDatosHistoricos():
-        frameDatosHsitoricos.place_forget() 
 
+    def mostrarFrameDatosHistoricos(self):
+        self.ocultarOtrosFrames();
+        self.frameDatosHistoricos.place(x=posicionFrames[0], y=posicionFrames[1])
+
+    def mostrarFrameEntrenamiento(self):
+        self.ocultarOtrosFrames();
+        self.frameEntrenamientoRed.place(x=posicionFrames[0], y=posicionFrames[1]) 
+
+    
+    def mostrarFramePrediccion(self):
+        self.ocultarOtrosFrames();
+        self.framePrediccion.place(x=posicionFrames[0], y=posicionFrames[1])         
+    
+    def ocultarOtrosFrames(self):
+        #print('Intentadno eliminar')             
+        self.frameDatosHistoricos.place_forget() 
+        self.frameEntrenamientoRed.place_forget() 
+        self.framePrediccion.place_forget()
+        
+    def dibujar(self):
     # Cracción Root y configuraciones iniciales
-    ventana = Tk()
-    posicion = str(ancho_ventana) + "x" + str(alto_ventana)
-    ventana.geometry(posicion)
-    ventana.resizable(0,0)
-    ventana.minsize(width=ancho_ventana, height=alto_ventana)
-    ventana.title('Predicción Demanda')
-    ventana.config(bg=colorBlanco)
-    ventana.iconbitmap('img/icono.ico')
-    center(ventana)
+        ventana = Tk()
+        posicion = str(ancho_ventana) + "x" + str(alto_ventana)
+        ventana.geometry(posicion)
+        ventana.resizable(0,0)
+        ventana.minsize(width=ancho_ventana, height=alto_ventana)
+        ventana.title('Predicción Demanda')
+        ventana.config(bg=colorBlanco)
+        ventana.iconbitmap('img/icono.ico')
+        center(ventana)
 
-    #Frame -> Contenedor
-    frameGlobal = Frame(ventana, width = ancho_ventana,  height=alto_ventana, bg= colorBlanco, relief ='sunken')
-    frameGlobal.grid(column=0,row=0)
+        #Frame -> Contenedor
 
-    #  ---------------------------------------  Encabezado  ------------------------------------------------- #
-    cargarImg(ventana, 'img/logo1.png',(100,100),(30,20))
-    cargarImg(ventana, 'img/logo2.png',(100,100),(800,20))
+        frameGlobal = Frame(ventana, width = ancho_ventana,  height=alto_ventana, 
+                            bg= colorBlanco, relief ='sunken')
+        frameGlobal.grid(column=0,row=0)
 
-    label1 = ttk.Label(frameGlobal, text="UNIVERSIDAD TÉCNICA DE COTOPAXI", background=colorBlanco, font=("Courie",14,'bold'))
-    label1.place(x=280, y=10)
+        # Frames
+      
+        
+        #  ----------------------------  Frame Entrenamiento de Red  -----------------------------------------------#        
+        self.frameEntrenamientoRed = Frame(frameGlobal, width = ancho_ventana, 
+                                    height=heightSubFrames, bg= colorAmarilloClaro, relief ='sunken')
+        self.frameEntrenamientoRed.place(x=posicionFrames[0], y=posicionFrames[1])
+        # --------------------------------------------------------------------------------------------------------------#
 
-    label2 = ttk.Label(frameGlobal, text="INGENIERÍA ELÉCTRICA", background=colorBlanco, font=("Courie",14,'bold'))
-    label2.place(x=350, y=40)
 
-    canvasAutores = Canvas(frameGlobal, bg= colorBlanco, width = 350, height =50, bd =0, highlightthickness=2, highlightbackground=colorNegro)
-    canvasAutores.place(x=300,y=75)
+        #  ----------------------------  Frame Predicción  -----------------------------------------------#        
+        self.framePrediccion = Frame(frameGlobal, width = ancho_ventana,  height=heightSubFrames, 
+                                    bg= colorVerdeClaro, relief ='sunken')
+        self.framePrediccion.place(x=posicionFrames[0], y=posicionFrames[1])
+        # --------------------------------------------------------------------------------------------------------------#
 
-    labelAutores = ttk.Label(canvasAutores, text="Autores:\n-Autor1\n-Autor2", background=colorBlanco, font=("Courie",8,'bold'))
-    labelAutores.place(x=5, y=5)
+        #  ----------------------------  Frame de Datos Históricos -----------------------------------------------#
+        
+        self.frameDatosHistoricos = Frame(frameGlobal, width = ancho_ventana,  
+                                    height=heightSubFrames, bg= colorCeleste, relief ='sunken')
+        self.frameDatosHistoricos.place(x=posicionFrames[0], y=posicionFrames[1])
+        #frameDatosHistoricos.pack()
+        # --------------------------------------------------------------------------------------------------------------#
 
-    # Botones encabezado
-    btnDatosHistoricos = Button(frameGlobal,text= 'Datos Históricos',font=("Courie",10,'bold'),command=mostrarDatosHistoricos, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorNegro)
-    btnDatosHistoricos.place(x=50,y=140)
 
-    btnEntrenamiento = Button(frameGlobal,text= 'Entrenamiento Red \nNeuronal',font=("Courie",10,'bold'),command=mostrarDatosHistoricos, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorNegro)
-    btnEntrenamiento.place(x=270,y=140)
+        #  ---------------------------------------  Encabezado  ------------------------------------------------- #
+        cargarImg(ventana, 'img/logo1.png',(100,100),(30,20))
+        cargarImg(ventana, 'img/logo2.png',(100,100),(800,20))
 
-    btnPrediccion = Button(frameGlobal,text= 'Predicción de\nla demanda',font=("Courie",10,'bold'),command=mostrarDatosHistoricos, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorNegro)
-    btnPrediccion.place(x=490,y=140)
+        label1 = ttk.Label(frameGlobal, text="UNIVERSIDAD TÉCNICA DE COTOPAXI", background=colorBlanco, font=("Courie",14,'bold'))
+        label1.place(x=280, y=10)
 
-    btnSalir = Button(frameGlobal,text= 'Salir',font=("Courie",10,'bold'),command=ventana.destroy, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorNegro)
-    btnSalir.place(x=710,y=140)
+        label2 = ttk.Label(frameGlobal, text="INGENIERÍA ELÉCTRICA", background=colorBlanco, font=("Courie",14,'bold'))
+        label2.place(x=350, y=40)
 
-    # ------------------------------------------------------------------------------------------------------- #
+        canvasAutores = Canvas(frameGlobal, bg= colorBlanco, width = 350, height =50, bd =0, highlightthickness=2, highlightbackground=colorNegro)
+        canvasAutores.place(x=300,y=75)
 
-    #  ----------------------------  Frame de Datos Históricos -----------------------------------------------#
-    global frameDatosHsitoricos
-    frameDatosHsitoricos = Frame(frameGlobal, width = ancho_ventana,  height=heightSubFrames, bg= colorAzul, relief ='sunken')
-    frameDatosHsitoricos.place(x=0,y=200)
+        labelAutores = ttk.Label(canvasAutores, text="Autores:\n-Autor1\n-Autor2", background=colorBlanco, font=("Courie",8,'bold'))
+        labelAutores.place(x=5, y=5)
 
-    # --------------------------------------------------------------------------------------------------------------#
 
-    # Canvas Controles
-    #canvasInfo = Canvas(frame, bg= '#50A3D3', width = 150, height =400, bd =0, highlightthickness=2, highlightbackground="white")
-    #canvasInfo.place(x=550,y=50)
+        # ------------------ Botones encabezado --------------------------
 
-    #combo = ttk.Combobox(state="readonly", values=['COM 0','COM 1'])
-    #combo.place(x=560,y=110)
+        btnDatosHistoricos = Button(frameGlobal,text= 'Datos Históricos',font=("Courie",10,'bold'),command=self.mostrarFrameDatosHistoricos, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorNegro)
+        btnDatosHistoricos.place(x=50,y=140)
 
-    #label0 = ttk.Label(frame,width=22,text='ZigBee Communication Port', background='#50A3D3', font=("Courie",8))
-    #label0.place(x=560, y=80)
+        btnEntrenamiento = Button(frameGlobal,text= 'Entrenamiento Red \nNeuronal',font=("Courie",10,'bold'),command=self.mostrarFrameEntrenamiento, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorNegro)
+        btnEntrenamiento.place(x=270,y=140)
 
-    #labelSalida = ttk.Label(frame,width=22,text='', background='white', font=("Courie",8))
-    #labelSalida.place(x=560, y=160)
+        btnPrediccion = Button(frameGlobal,text= 'Predicción de\nla demanda',font=("Courie",10,'bold'),command=self.mostrarFramePrediccion, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnPrediccion.place(x=490,y=140)
 
-    #labelBault1 = ttk.Label(frame,width=8,text='', background='white', font=("Courie",8))
-    #labelBault1.place(x=620, y=190)
+        btnSalir = Button(frameGlobal,text= 'Salir',font=("Courie",10,'bold'),command=ventana.destroy, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnSalir.place(x=710,y=140)
 
-    #labelBault2 = ttk.Label(frame,width=8,text='Bault', background='#50A3D3', font=("Courie",8))
-    #labelBault2.place(x=560, y=190)
-                   
-    ventana.mainloop()
+        # --------------- Elementos Frame Datos históricos ---------------------------- #
 
-mainInterfaz()
+        canvasDatosHistoricos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+         width = 200, height =300, bd =0, highlightthickness=2, highlightbackground="white")
+
+        canvasDatosHistoricos.place(x=10,y=10)
+
+
+
+        # ------------------------------------------------------------------------------------------------------- #                
+        # Canvas Controles
+        #canvasInfo = Canvas(frame, bg= '#50A3D3', width = 150, height =400, bd =0, highlightthickness=2, highlightbackground="white")
+        #canvasInfo.place(x=550,y=50)
+
+        #combo = ttk.Combobox(state="readonly", values=['COM 0','COM 1'])
+        #combo.place(x=560,y=110)
+
+        #label0 = ttk.Label(frame,width=22,text='ZigBee Communication Port', background='#50A3D3', font=("Courie",8))
+        #label0.place(x=560, y=80)
+
+        #labelSalida = ttk.Label(frame,width=22,text='', background='white', font=("Courie",8))
+        #labelSalida.place(x=560, y=160)
+
+        #labelBault1 = ttk.Label(frame,width=8,text='', background='white', font=("Courie",8))
+        #labelBault1.place(x=620, y=190)
+
+        #labelBault2 = ttk.Label(frame,width=8,text='Bault', background='#50A3D3', font=("Courie",8))
+        #labelBault2.place(x=560, y=190)   
+        # 
+        ventana.mainloop()          
+
+interfaz = Interfaz()
+#interfaz.dibujar()
