@@ -1,8 +1,9 @@
 from logging import root
-from tkinter import GROOVE, SUNKEN,Canvas, StringVar, Tk,Frame , ttk, Button, Radiobutton
-from math import cos, sin, radians, pi
+from tkinter import (GROOVE, SUNKEN,Canvas, StringVar, Tk,Frame , 
+                    ttk, Button, Radiobutton, HORIZONTAL, VERTICAL
+                    ,Scrollbar)
 import random
-from turtle import pos
+from turtle import pos, width
 from typing import Text
 
 from tkinter import PhotoImage
@@ -22,6 +23,8 @@ global colorAmarilloClaro
 colorAmarilloClaro = '#EBFF91'
 global colorVerdeClaro
 colorVerdeClaro = '#C4FFB2'
+global colorAmarillo
+colorAmarillo = '#F7FF00'
 
 #Dimensiones
 global ancho_ventana
@@ -307,6 +310,28 @@ class Interfaz:
         combo8.place(x=165,y=210)
 
 
+        # ------------- Tabla  y Gráfica
+        
+        canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+         width = 620, height =410, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasTblGrafDatos.place(x=300,y=10)
+
+        columns = ('first_name', 'last_name', 'email')
+        tabla = ttk.Treeview(canvasTblGrafDatos , height=15, columns=columns, show='headings')
+        tabla.place(x=10,y=10)
+        tabla.heading('first_name',text='First Name')
+        tabla.heading('last_name',text='Last Name')
+        tabla.heading('email',text='Email')
+
+        #ladox = Scrollbar(canvasTblGrafDatos, orient = HORIZONTAL, command= tabla.xview)
+        #ladox.place(x=20, y = 20) 
+
+        #ladoy = Scrollbar(canvasTblGrafDatos, orient =VERTICAL, command = tabla.yview)
+        #ladoy.grid(column = 1, row = 0, sticky='ns')
+
+        #tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
+
+
 #  2.  --------------- Elementos Frame Entrenamiento Red Neuronal ---------------------------- #
 # Usa desde el combox número 9
 
@@ -332,7 +357,7 @@ class Interfaz:
             #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         #btnExportar.place(x=15,y=365)
 
-         # --- Sección de radio buttons
+         # --- Sección de controles
 
         label7 = ttk.Label(canvasEntrenamiento,width=22,text='Parámetros', background=colorBlanco, font=("Courie",10,'bold'))
         label7.place(x=85, y=15)
@@ -355,6 +380,157 @@ class Interfaz:
         #entryLearningRate = ttk.Entry(root)
         #entryLearningRate.place(x=110, y=120)
 
+        
+
+
+# 3.  ---------------  Elementos Frame Predicción ---------------------------- #
+# Usa desde el combox número 10
+
+        # 1. Canvas de controles
+
+        canvasPrediccion = Canvas(self.framePrediccion, bg= colorBlanco,
+         width = 250, height =300, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasPrediccion.place(x=15,y=10)
+
+     
+          # -- Encabezados de predicción
+
+        label0 = ttk.Label(canvasPrediccion,width=6,text='Desde', background=colorBlanco, font=("Courie",10, 'bold'))
+        label0.place(x=20, y=10)
+        
+        label2 = ttk.Label(canvasPrediccion,width=6,text='Hasta', background=colorBlanco, font=("Courie",10,'bold'))
+        label2.place(x=150, y=10)
+
+        # --- Parte izquierda desde
+
+        label3 = ttk.Label(canvasPrediccion,width=6,text='Año', background=colorBlanco, font=("Courie",10))
+        label3.place(x=5, y=40)
+
+        combo10 = ttk.Combobox(canvasPrediccion,values=listaAnos, width=5)
+        combo10.place(x=45,y=40)
+
+        label4 = ttk.Label(canvasPrediccion,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
+        label4.place(x=5, y=70)
+
+        combo11 = ttk.Combobox(canvasPrediccion,values=listaMeses, width=5)
+        combo11.place(x=45,y=70)
+       
+        label5 = ttk.Label(canvasPrediccion,width=6,text='Día', background=colorBlanco, font=("Courie",10))
+        label5.place(x=5, y=100)
+
+        combo12 = ttk.Combobox(canvasPrediccion,
+            values=listaDias,
+            width=5)
+        combo12.place(x=45,y=100)
+       
+        label6 = ttk.Label(canvasPrediccion,width=6,text='Hora', background=colorBlanco, font=("Courie",10))
+        label6.place(x=5, y=130)
+
+        combo13 = ttk.Combobox(canvasPrediccion,
+            values=listaHoras,
+            width=5)
+        combo13.place(x=45,y=130)
+
+
+        # Parte derecha - Hasta
+        
+        label7 = ttk.Label(canvasPrediccion,width=6,text='Año', background=colorBlanco, font=("Courie",10))
+        label7.place(x=125, y=40)
+
+        combo14 = ttk.Combobox(canvasPrediccion,values=listaAnos, width=5)
+        combo14.place(x=165,y=40)
+
+        label4 = ttk.Label(canvasPrediccion,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
+        label4.place(x=125, y=70)
+
+        combo15 = ttk.Combobox(canvasPrediccion,values=listaMeses, width=5)
+        combo15.place(x=165,y=70)
+       
+        label5 = ttk.Label(canvasPrediccion,width=6,text='Día', background=colorBlanco, font=("Courie",10))
+        label5.place(x=125, y=100)
+
+        combo16 = ttk.Combobox(canvasPrediccion,
+            values=listaDias,
+            width=5)
+        combo16.place(x=165,y=100)
+       
+        label6 = ttk.Label(canvasPrediccion,width=6,text='Hora', background=colorBlanco, font=("Courie",10))
+        label6.place(x=125, y=130)
+
+        combo19 = ttk.Combobox(canvasPrediccion,
+            values=listaHoras,
+            width=5)
+        combo19.place(x=165,y=130)
+
+
+           # --- Parte izquierda abajo, demanda específica
+        
+        label10 = ttk.Label(canvasPrediccion,width=22,text='Demanda Específica', background=colorBlanco, font=("Courie",10,'bold'))
+        label10.place(x=65, y=160)
+
+        label3 = ttk.Label(canvasPrediccion,width=6,text='Año', background=colorBlanco, font=("Courie",10))
+        label3.place(x=5, y=190)
+
+        combo20 = ttk.Combobox(canvasPrediccion,values=listaAnos, width=5)
+        combo20.place(x=45,y=190)
+
+        label4 = ttk.Label(canvasPrediccion,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
+        label4.place(x=5, y=220)
+
+        combo21 = ttk.Combobox(canvasPrediccion,values=listaMeses, width=5)
+        combo21.place(x=45,y=220)
+       
+        label5 = ttk.Label(canvasPrediccion,width=6,text='Día', background=colorBlanco, font=("Courie",10))
+        label5.place(x=5, y=250)
+
+        combo22 = ttk.Combobox(canvasPrediccion,
+            values=listaDias,
+            width=5)
+        combo22.place(x=45,y=250)
+       
+        label6 = ttk.Label(canvasPrediccion,width=6,text='Hora', background=colorBlanco, font=("Courie",10))
+        label6.place(x=5, y=280)
+
+        combo23 = ttk.Combobox(canvasPrediccion,
+            values=listaHoras,
+            width=5)
+        combo23.place(x=45,y=280)
+
+        btnCalcular = Button(canvasPrediccion,text= 'Calcular',
+            font=("Courie",10,'bold'),command=self.nada, width=10, height=1, 
+            bd= 2,bg=colorAmarillo, relief=GROOVE, highlightbackground=colorAzul)
+        btnCalcular.place(x=140,y=200)
+
+        labelRespuesta = ttk.Label(canvasPrediccion,width=6,text='0', background=colorCeleste, font=("Courie",10))
+        labelRespuesta.place(x=155, y=245)
+
+
+         # 2. Botones de control
+
+        btnGraficar = Button(self.framePrediccion,text= 'Predecir demanda',
+            font=("Courie",10,'bold'),command=self.nada, width=31, height=1, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnGraficar.place(x=15,y=320) 
+        
+        btnGraficaPredict = Button(self.framePrediccion,text= 'Grafica',
+            font=("Courie",10,'bold'),command=self.nada, width=14, height=1, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnGraficaPredict.place(x=15,y=355)
+        
+        btnTablaPredict = Button(self.framePrediccion,text= 'Tabla',
+            font=("Courie",10,'bold'),command=self.nada, width=14, height=1, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnTablaPredict.place(x=150,y=355)
+
+        btnExportarGraficaPredict = Button(self.framePrediccion,text= 'Exportar\nGrafica',
+            font=("Courie",10,'bold'),command=self.nada, width=14, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnExportarGraficaPredict.place(x=15,y=390)
+        
+        btnExportarTablaPredict = Button(self.framePrediccion,text= 'Exportar\nTabla',
+            font=("Courie",10,'bold'),command=self.nada, width=14, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnExportarTablaPredict.place(x=150,y=390)
 
         
     #Ejecución
