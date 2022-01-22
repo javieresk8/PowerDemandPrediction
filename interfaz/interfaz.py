@@ -35,7 +35,7 @@ heightSubFrames = 450
 global posicionFrames
 posicionFrames = (0,200)
 
-# Listas de datos
+# Listas de datos para los comboxs
 global listaAnos
 listaAnos = [2015,2016,2017,2018,2019,2020,2021]
 global listaMeses
@@ -44,6 +44,8 @@ global listaDias
 listaDias = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
 global listaHoras
 listaHoras = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+global listaOptimizadores
+listaOptimizadores = ['RMSprop','Adam','Adadelta']
 
  
 class Modelos: 
@@ -190,7 +192,7 @@ class Interfaz:
         btnSalir.place(x=710,y=140)
 
 
-#  1.  --------------- Elementos Frame Datos históricos ---------------------------- #
+# 1.  --------------- Elementos Frame Datos históricos ---------------------------- #
 
         # 1. Canvas de controles
         canvasDatosHistoricos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
@@ -306,15 +308,56 @@ class Interfaz:
 
 
 #  2.  --------------- Elementos Frame Entrenamiento Red Neuronal ---------------------------- #
+# Usa desde el combox número 9
 
         # 1. Canvas de controles
-        canvasEntrenamiento = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+        canvasEntrenamiento = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
          width = 250, height =240, bd =0, highlightthickness=2, highlightbackground="white")
-        canvasDatosHistoricos.place(x=15,y=10)       
-       
+        canvasEntrenamiento.place(x=15,y=10)     
+
+         # 2. Botones de control
+        
+        btnvisualizarDatos = Button(self.frameEntrenamientoRed,text= 'Entrenar Red Neuronal',
+            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnvisualizarDatos.place(x=15,y=265)
+
+        btnGraficar = Button(self.frameEntrenamientoRed,text= 'Exportar Gráfica',
+            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnGraficar.place(x=15,y=315)
+
+        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfica\nentrenamientp',
+            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        #btnExportar.place(x=15,y=365)
+
+         # --- Sección de radio buttons
+
+        label7 = ttk.Label(canvasEntrenamiento,width=22,text='Parámetros', background=colorBlanco, font=("Courie",10,'bold'))
+        label7.place(x=85, y=15)
+  
+        label8 = ttk.Label(canvasEntrenamiento,width=11,text='Optimizador', background=colorBlanco, font=("Courie",10))
+        label8.place(x=15, y=50)
+
+        combo9 = ttk.Combobox(canvasEntrenamiento,values=listaOptimizadores, state='readonly',width=9)
+        combo9.place(x=125,y=50)
+        
+        label9 = ttk.Label(canvasEntrenamiento,width=11,text='Neuronas', background=colorBlanco, font=("Courie",10))
+        label9.place(x=15, y=80)
+
+        entryNeuronas = ttk.Entry(canvasEntrenamiento,width=12)
+        entryNeuronas.place(x=125, y=80)
+
+        #labeln = ttk.Label(canvasEntrenamiento,width=11,text='Learning-Rate', background=colorBlanco, font=("Courie",10))
+        #labeln.place(x=15, y=80)
+
+        #entryLearningRate = ttk.Entry(root)
+        #entryLearningRate.place(x=110, y=120)
+
 
         
-
+    #Ejecución
         ventana.mainloop()          
 
 interfaz = Interfaz()
