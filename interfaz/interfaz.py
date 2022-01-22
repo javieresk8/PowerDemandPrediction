@@ -1,5 +1,5 @@
 from logging import root
-from tkinter import GROOVE, SUNKEN, Canvas, Tk,Frame ,LAST, ttk, Button
+from tkinter import GROOVE, SUNKEN,Canvas, StringVar, Tk,Frame , ttk, Button, Radiobutton
 from math import cos, sin, radians, pi
 import random
 from turtle import pos
@@ -7,6 +7,7 @@ from typing import Text
 
 from tkinter import PhotoImage
 from PIL import Image,ImageTk
+
 
 # Colores
 global colorBlanco
@@ -177,14 +178,60 @@ class Interfaz:
         btnSalir = Button(frameGlobal,text= 'Salir',font=("Courie",10,'bold'),command=ventana.destroy, width=20, height=2, bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnSalir.place(x=710,y=140)
 
+
         # --------------- Elementos Frame Datos históricos ---------------------------- #
 
         canvasDatosHistoricos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
-         width = 200, height =300, bd =0, highlightthickness=2, highlightbackground="white")
+         width = 300, height =300, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasDatosHistoricos.place(x=15,y=10)
+     
 
-        canvasDatosHistoricos.place(x=10,y=10)
+        def seleccionarRadioButton():
+            print('Seleccionaste: ',opcion.get())        
+            #opcionDatosHistoricos = opcion.get()
 
+        global opcion
+        opcion = StringVar()
+        
 
+        label0 = ttk.Label(canvasDatosHistoricos,width=22,text='Datos', background=colorBlanco, font=("Courie",10,'bold'))
+        label0.place(x=35, y=15)
+        
+        radioTotal = Radiobutton(canvasDatosHistoricos, text="Total", variable=opcion, 
+            value='Total', command=seleccionarRadioButton, tristatevalue=0)
+        radioTotal.place(x=20,y=40)
+
+        radioParcial = Radiobutton(canvasDatosHistoricos, text="Parcial", variable=opcion, 
+            value='Parcial', command=seleccionarRadioButton, tristatevalue=0)
+        radioParcial.place(x=20,y=60)
+
+        label1 = ttk.Label(canvasDatosHistoricos,width=6,text='Desde', background=colorBlanco, font=("Courie",10))
+        label1.place(x=20, y=100)
+        
+        label2 = ttk.Label(canvasDatosHistoricos,width=6,text='Hasta', background=colorBlanco, font=("Courie",10))
+        label2.place(x=150, y=100)
+
+        label3 = ttk.Label(canvasDatosHistoricos,width=6,text='Año', background=colorBlanco, font=("Courie",10))
+        label3.place(x=5, y=120)
+
+        combo = ttk.Combobox(canvasDatosHistoricos,values=[2018,2019,2020], width=5)
+        combo.place(x=45,y=120)
+
+        label4 = ttk.Label(canvasDatosHistoricos,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
+        label4.place(x=5, y=150)
+
+        combo2 = ttk.Combobox(canvasDatosHistoricos,values=[1,2,3,4,5,6,7,8,9,10,11,12], width=5)
+        combo2.place(x=45,y=150)
+       
+        label5 = ttk.Label(canvasDatosHistoricos,width=6,text='Día', background=colorBlanco, font=("Courie",10))
+        label5.place(x=5, y=180)
+
+        combo3 = ttk.Combobox(canvasDatosHistoricos,
+            values=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],
+            width=5)
+        combo3.place(x=45,y=180)
+       
+       
 
         # ------------------------------------------------------------------------------------------------------- #                
         # Canvas Controles
