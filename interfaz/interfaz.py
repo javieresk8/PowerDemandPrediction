@@ -1,7 +1,10 @@
+# Importaciones para la interfaz
 from logging import root
-from tkinter import (GROOVE, SUNKEN,Canvas, StringVar, Tk,Frame , 
-                    ttk, Button, Radiobutton, HORIZONTAL, VERTICAL
-                    ,Scrollbar)
+from tkinter import (GROOVE, SUNKEN,Canvas, StringVar, Tk,Frame, 
+                    ttk, Button, Radiobutton, HORIZONTAL, VERTICAL, TOP,
+                    BOTH, YES
+
+                    ,Scrollbar,NO)
 import random
 from turtle import pos, width
 from typing import Text
@@ -9,6 +12,19 @@ from typing import Text
 from tkinter import PhotoImage
 from PIL import Image,ImageTk
 
+# Importaciones para datos
+import pandas as pd
+from sqlalchemy import tablesample
+import numpy as np
+
+# Para graficasciones
+import matplotlib as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+
+# Nuestros módulos
+from utilidades import obtenerTodosDatos
 
 # Colores
 global colorBlanco
@@ -49,6 +65,10 @@ global listaHoras
 listaHoras = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 global listaOptimizadores
 listaOptimizadores = ['RMSprop','Adam','Adadelta']
+
+# data
+global tabla
+#tabla = ttk.Treeview()
 
  
 class Modelos: 
@@ -201,16 +221,103 @@ class Interfaz:
         canvasDatosHistoricos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
          width = 250, height =240, bd =0, highlightthickness=2, highlightbackground="white")
         canvasDatosHistoricos.place(x=15,y=10)
+            
+        canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+         width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasTblGrafDatos.place(x=300,y=10)
+
+        global opcion
+        
+        opcion = StringVar()
+        
 
         # 2. Botones de control
         
+        def cargarData():   
+            canvasTblGrafDatos.delete('all')
+            columns = ('ID','Año', 'Mes', 'Día','Hora','Demanda')        
+            tabla = ttk.Treeview(canvasTblGrafDatos , height=18, columns=columns, show='headings')
+            tabla.place(x=10,y=10)
+
+            tabla.heading('ID',text='ID')
+            tabla.column("ID", minwidth=0, width=50, stretch=NO) 
+
+            tabla.heading('Año',text='Año')
+            tabla.column("Año", minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Mes',text='Mes')
+            tabla.column('Mes', minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Día',text='Día')
+            tabla.column('Día', minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Hora',text='Hora')
+            tabla.column('Hora', minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Demanda',text='Demanda(KW-H)')    
+            tabla.column("Demanda", minwidth=0, width=100, stretch=NO) 
+
+            ladox = Scrollbar(canvasTblGrafDatos, orient = HORIZONTAL, command= tabla.xview)
+            ladox.place(x=20, y =400) 
+
+            ladoy = Scrollbar(canvasTblGrafDatos, orient =VERTICAL, command = tabla.yview)
+            ladoy.place(x=585,y=15)
+            ladoy.set(20,200)
+
+            tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
+        
+            if opcion.get() == 'Total':
+                data = obtenerTodosDatos().to_numpy().tolist()
+                for fila in data: 
+                    tabla.insert('', 'end', values =fila)
+            else:
+                print('Solo datos parciales')
+            
+        
         btnvisualizarDatos = Button(self.frameDatosHistoricos,text= 'Visualizar Datos',
-            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            font=("Courie",10,'bold'),command=cargarData, width=31, height=2, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnvisualizarDatos.place(x=15,y=265)
 
+        def graficarDemanda():       
+            canvasTblGrafDatos.delete('all')  
+            print('llega',opcion.get())
+            if opcion.get() == 'Total':                
+                figura = Figure(figsize=(6, 4), dpi=100)
+                a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er
+
+                # Generar datos para dibujar un gráfico sin
+                x = np.arange(0, 3, 0.01)
+                y = np.sin(2 * np.pi * x)
+                a.plot(x, y)  
+                a.set_title('A')         
+                 # Visualice los gráficos dibujados en tkinter: cree un lienzo de lienzo que pertenezca a la raíz y coloque la imagen f en el lienzo
+                canvas = FigureCanvasTkAgg(figura, master=canvasTblGrafDatos)
+                toolbar = NavigationToolbar2Tk(canvas, canvasTblGrafDatos)
+                toolbar.update()
+                #canvas.place(x=50,y=50)
+                canvas.get_tk_widget().pack(fill=BOTH)
+                #canvas.draw () # Tenga en cuenta que el método show está desactualizado, use draw en su lugar
+                
+                #canvas.get_tk_widget (). pack (#lado = TOP, # alinear arriba
+                 #                                        fill = BOTH, # método de relleno
+                  #                                       expand = YES) # ajustar con el ajuste del tamaño de la ventana
+                toolbar = NavigationToolbar2Tk(canvas, master=canvasTblGrafDatos)
+                toolbar.update()
+                canvas.get_tk_widget().pack(fill=BOTH)
+                #canvas.get_tk_widget.pack(side = TOP, # get_tk_widget () obtiene _tkcanvas
+                      #fill=BOTH,
+                      #expand=YES)
+
+            elif opcion.get() == 'Parcial':
+                print('Graficar datos parciales')
+            else:
+                print('Esperando')
+                            
+            
+
         btnGraficar = Button(self.frameDatosHistoricos,text= 'Graficar',
-            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            font=("Courie",10,'bold'),command=graficarDemanda, width=31, height=2, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnGraficar.place(x=15,y=315)
 
@@ -221,15 +328,17 @@ class Interfaz:
 
 
         def seleccionarRadioButton():
-            print('Seleccionaste: ',opcion.get())        
-            #opcionDatosHistoricos = opcion.get()
-
-        global opcion
-        opcion = StringVar()
-        
+            #print('Seleccionaste: ',opcion.get())
+            if opcion.get() == 'Total':
+                #print('seleccionasteTotal')
+                bloquearCombos()
+            else:
+                desbloquearCombos()
+            
+      
         # --- Sección de radio buttons
 
-        label0 = ttk.Label(canvasDatosHistoricos,width=22,text='Datos', background=colorBlanco, font=("Courie",10,'bold'))
+        label0 = ttk.Label(canvasDatosHistoricos,width=6,text='Datos', background=colorBlanco, font=("Courie",10,'bold'))
         label0.place(x=100, y=15)
         
         radioTotal = Radiobutton(canvasDatosHistoricos, text="Total", variable=opcion, 
@@ -309,28 +418,28 @@ class Interfaz:
             width=5)
         combo8.place(x=165,y=210)
 
+        def bloquearCombos():
+            combo1.config(state='disabled')
+            combo2.config(state='disabled')
+            combo3.config(state='disabled')
+            combo4.config(state='disabled')
+            combo5.config(state='disabled')
+            combo6.config(state='disabled')            
+            combo7.config(state='disabled')
+            combo8.config(state='disabled')
 
-        # ------------- Tabla  y Gráfica
-        
-        canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
-         width = 620, height =410, bd =0, highlightthickness=2, highlightbackground="white")
-        canvasTblGrafDatos.place(x=300,y=10)
+        def desbloquearCombos():
+            combo1.config(state='normal')
+            combo2.config(state='normal')
+            combo3.config(state='normal')
+            combo4.config(state='normal')
+            combo5.config(state='normal')
+            combo6.config(state='normal')
+            combo7.config(state='normal')
+            combo8.config(state='normal')
 
-        columns = ('first_name', 'last_name', 'email')
-        tabla = ttk.Treeview(canvasTblGrafDatos , height=15, columns=columns, show='headings')
-        tabla.place(x=10,y=10)
-        tabla.heading('first_name',text='First Name')
-        tabla.heading('last_name',text='Last Name')
-        tabla.heading('email',text='Email')
-
-        #ladox = Scrollbar(canvasTblGrafDatos, orient = HORIZONTAL, command= tabla.xview)
-        #ladox.place(x=20, y = 20) 
-
-        #ladoy = Scrollbar(canvasTblGrafDatos, orient =VERTICAL, command = tabla.yview)
-        #ladoy.grid(column = 1, row = 0, sticky='ns')
-
-        #tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
-
+        # ------------- Tabla  y Gráfica ------------- #
+    
 
 #  2.  --------------- Elementos Frame Entrenamiento Red Neuronal ---------------------------- #
 # Usa desde el combox número 9
