@@ -2,8 +2,7 @@
 from logging import root
 from tkinter import (GROOVE, SUNKEN,Canvas, StringVar, Tk,Frame, 
                     ttk, Button, Radiobutton, HORIZONTAL, VERTICAL, TOP,
-                    BOTH, YES
-
+                    BOTH, YES, ALL
                     ,Scrollbar,NO)
 import random
 from turtle import pos, width
@@ -23,8 +22,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 
+
 # Nuestros módulos
 from utilidades import obtenerTodosDatos
+from redNeuronal import NN_LSTM
 
 # Colores
 global colorBlanco
@@ -68,7 +69,8 @@ listaOptimizadores = ['RMSprop','Adam','Adadelta']
 
 # data
 global tabla
-#tabla = ttk.Treeview()
+dataTotalTime = pd.read_csv('../data/data_total_dattime.csv',skiprows=0,index_col=0,usecols=[0,1])
+
 
  
 class Modelos: 
@@ -215,13 +217,19 @@ class Interfaz:
         btnSalir.place(x=710,y=140)
 
 
+
+
+
+# ---------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------#
 # 1.  --------------- Elementos Frame Datos históricos ---------------------------- #
 
         # 1. Canvas de controles
         canvasDatosHistoricos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
          width = 250, height =240, bd =0, highlightthickness=2, highlightbackground="white")
         canvasDatosHistoricos.place(x=15,y=10)
-            
+        global canvasTblGrafDatos
         canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
          width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
         canvasTblGrafDatos.place(x=300,y=10)
@@ -233,9 +241,16 @@ class Interfaz:
 
         # 2. Botones de control
         
-        def cargarData():   
-            canvasTblGrafDatos.delete('all')
-            columns = ('ID','Año', 'Mes', 'Día','Hora','Demanda')        
+        def cargarData():               
+            #canvasTblGrafDatos.place_forget()     
+            #canvasTblGrafDatos.place(x=300,y=10)  
+            #canvasTblGrafDatos.delete(ALL)
+            #canvasTblGrafDatos.destroy()
+            canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+            width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasTblGrafDatos.place(x=300,y=10)
+         
+            columns = ('ID','Año', 'Mes', 'Día','Hora','Demanda')                    
             tabla = ttk.Treeview(canvasTblGrafDatos , height=18, columns=columns, show='headings')
             tabla.place(x=10,y=10)
 
@@ -272,39 +287,45 @@ class Interfaz:
                     tabla.insert('', 'end', values =fila)
             else:
                 print('Solo datos parciales')
-            
-        
+                    
         btnvisualizarDatos = Button(self.frameDatosHistoricos,text= 'Visualizar Datos',
             font=("Courie",10,'bold'),command=cargarData, width=31, height=2, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnvisualizarDatos.place(x=15,y=265)
 
-        def graficarDemanda():       
-            canvasTblGrafDatos.delete('all')  
-            print('llega',opcion.get())
-            if opcion.get() == 'Total':                
-                figura = Figure(figsize=(6, 4), dpi=100)
-                a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er
+        figura = Figure(figsize=(6, 4), dpi=100)
 
-                # Generar datos para dibujar un gráfico sin
-                x = np.arange(0, 3, 0.01)
-                y = np.sin(2 * np.pi * x)
-                a.plot(x, y)  
-                a.set_title('A')         
-                 # Visualice los gráficos dibujados en tkinter: cree un lienzo de lienzo que pertenezca a la raíz y coloque la imagen f en el lienzo
-                canvas = FigureCanvasTkAgg(figura, master=canvasTblGrafDatos)
+        def graficarDemanda():       
+            
+            print('llega',opcion.get())
+            if opcion.get() == 'Total':                              
+                
+                figura.clf()
+                canvasTblGrafDatos=Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+                    width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+                canvasTblGrafDatos.place(x=300,y=10)
+                a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er            
+                data = dataTotalTime[
+                    dataTotalTime.index.get_loc('2019-02-04 00:00:00'):
+                    dataTotalTime.index.get_loc('2019-02-11 00:00:00')]
+                      
+                a.plot(data, 
+                        color='blue', 
+                        label='Datos Pronosticados')
+                a.set_title('Curva de la demanda histórica',
+                            fontsize = 13,
+                            fontweight = 'bold',
+                            fontfamily='serif')
+                a.legend()
+                #plt.show()
+
+                canvas = FigureCanvasTkAgg(figura, canvasTblGrafDatos)
                 toolbar = NavigationToolbar2Tk(canvas, canvasTblGrafDatos)
                 toolbar.update()
                 #canvas.place(x=50,y=50)
                 canvas.get_tk_widget().pack(fill=BOTH)
                 #canvas.draw () # Tenga en cuenta que el método show está desactualizado, use draw en su lugar
-                
-                #canvas.get_tk_widget (). pack (#lado = TOP, # alinear arriba
-                 #                                        fill = BOTH, # método de relleno
-                  #                                       expand = YES) # ajustar con el ajuste del tamaño de la ventana
-                toolbar = NavigationToolbar2Tk(canvas, master=canvasTblGrafDatos)
-                toolbar.update()
-                canvas.get_tk_widget().pack(fill=BOTH)
+                          
                 #canvas.get_tk_widget.pack(side = TOP, # get_tk_widget () obtiene _tkcanvas
                       #fill=BOTH,
                       #expand=YES)
@@ -321,10 +342,10 @@ class Interfaz:
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnGraficar.place(x=15,y=315)
 
-        btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfico',
-            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnExportar.place(x=15,y=365)
+        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfico',
+            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        #btnExportar.place(x=15,y=365)
 
 
         def seleccionarRadioButton():
@@ -438,9 +459,14 @@ class Interfaz:
             combo7.config(state='normal')
             combo8.config(state='normal')
 
-        # ------------- Tabla  y Gráfica ------------- #
+     
     
 
+
+
+# ---------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------#
 #  2.  --------------- Elementos Frame Entrenamiento Red Neuronal ---------------------------- #
 # Usa desde el combox número 9
 
@@ -448,23 +474,6 @@ class Interfaz:
         canvasEntrenamiento = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
          width = 250, height =240, bd =0, highlightthickness=2, highlightbackground="white")
         canvasEntrenamiento.place(x=15,y=10)     
-
-         # 2. Botones de control
-        
-        btnvisualizarDatos = Button(self.frameEntrenamientoRed,text= 'Entrenar Red Neuronal',
-            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnvisualizarDatos.place(x=15,y=265)
-
-        btnGraficar = Button(self.frameEntrenamientoRed,text= 'Exportar Gráfica',
-            font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnGraficar.place(x=15,y=315)
-
-        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfica\nentrenamientp',
-            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        #btnExportar.place(x=15,y=365)
 
          # --- Sección de controles
 
@@ -483,13 +492,106 @@ class Interfaz:
         entryNeuronas = ttk.Entry(canvasEntrenamiento,width=12)
         entryNeuronas.place(x=125, y=80)
 
-        #labeln = ttk.Label(canvasEntrenamiento,width=11,text='Learning-Rate', background=colorBlanco, font=("Courie",10))
-        #labeln.place(x=15, y=80)
+        label9 = ttk.Label(canvasEntrenamiento,width=11,text='Épocas', background=colorBlanco, font=("Courie",10))
+        label9.place(x=15, y=110)
 
-        #entryLearningRate = ttk.Entry(root)
-        #entryLearningRate.place(x=110, y=120)
+        entryEpocas = ttk.Entry(canvasEntrenamiento,width=12)
+        entryEpocas.place(x=125, y=110)
 
+        # ----- Canvas gráfica de entenamiento ---------#
+           
+        global canvasGrfEntrenamiento
+        global canvasGrfEntrenamiento2
         
+        canvasGrfEntrenamiento = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
+            width = 620, height =220, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasGrfEntrenamiento.place(x=300,y=0)
+
+        canvasGrfEntrenamiento2 = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
+            width = 620, height =200, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasGrfEntrenamiento2.place(x=300,y=225)
+                  
+        figuraEntrenamiento = Figure(figsize=(6, 1.9), dpi=100)
+        figuraEntrenamiento2 = Figure(figsize=(6, 1.9), dpi=100)
+
+        def entrenarLSTM():
+            optimizador =  combo9.get()                
+            neuronas = int(entryNeuronas.get())
+            epocas = int(entryEpocas.get())
+            model, history = NN_LSTM(optimizador, neuronas, epocas)
+            print(model)
+            print(history)
+
+            #loss
+            canvasGrfEntrenamiento = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
+            width = 620, height =200, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasGrfEntrenamiento.place(x=300,y=0)
+            
+            figuraEntrenamiento.clf()
+            
+          
+            a = figuraEntrenamiento.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er            
+                         
+            a.plot(history.history['loss'], 
+                    color='green', 
+                    label='loss')
+            a.set_title('Evolución optimización de pérdida (Loss)',
+                        fontsize = 9,
+                        fontweight = 'bold',
+                        fontfamily='serif',
+                        y=1.0,
+                        pad=-15)
+            a.legend()
+
+            canvas = FigureCanvasTkAgg(figuraEntrenamiento, canvasGrfEntrenamiento)            
+            toolbar = NavigationToolbar2Tk(canvas, canvasGrfEntrenamiento)
+            toolbar.update()
+            canvas.get_tk_widget().pack(fill=BOTH, side = TOP, expand=YES)
+        
+            #mean_absolute_error
+            #figuraEntrenamiento2.clf()
+            
+            canvasGrfEntrenamiento2 = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
+            width = 620, height =200, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasGrfEntrenamiento2.place(x=300,y=225)           
+          
+            a2 = figuraEntrenamiento2.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er            
+                         
+            a2.plot(history.history['mean_absolute_error'], 
+                    color='blue', 
+                    label='MAE')
+            a2.set_title('Evolución MAE',
+                        fontsize = 9,
+                        fontweight = 'bold',
+                        fontfamily='serif',
+                        y=1.0,
+                        pad=-15)
+            a2.legend()
+
+            canvas2 = FigureCanvasTkAgg(figuraEntrenamiento2, canvasGrfEntrenamiento2)            
+            toolbar2 = NavigationToolbar2Tk(canvas2, canvasGrfEntrenamiento2)
+            toolbar2.update()           
+            canvas2.get_tk_widget().pack(fill=BOTH)                     
+        
+         # 2. Botones de control
+              
+        btnEntrenar = Button(self.frameEntrenamientoRed,text= 'Entrenar red neuronal',
+            font=("Courie",10,'bold'),command=entrenarLSTM, width=31, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnEntrenar.place(x=15,y=265)
+
+        #btnGraficar = Button(self.frameEntrenamientoRed,text= 'Exportar Gráfica',
+            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        #btnGraficar.place(x=15,y=315)
+
+        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfica\nentrenamientp',
+            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        #btnExportar.place(x=15,y=365)
+
+
+
 
 
 # 3.  ---------------  Elementos Frame Predicción ---------------------------- #
