@@ -219,7 +219,6 @@ class Interfaz:
 
 
 
-
 # ---------------------------------------------------------------------------------#
 # ---------------------------------------------------------------------------------#
 # ---------------------------------------------------------------------------------#
@@ -237,116 +236,6 @@ class Interfaz:
         global opcion
         
         opcion = StringVar()
-        
-
-        # 2. Botones de control
-        
-        def cargarData():               
-            #canvasTblGrafDatos.place_forget()     
-            #canvasTblGrafDatos.place(x=300,y=10)  
-            #canvasTblGrafDatos.delete(ALL)
-            #canvasTblGrafDatos.destroy()
-            canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
-            width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
-            canvasTblGrafDatos.place(x=300,y=10)
-         
-            columns = ('ID','Año', 'Mes', 'Día','Hora','Demanda')                    
-            tabla = ttk.Treeview(canvasTblGrafDatos , height=18, columns=columns, show='headings')
-            tabla.place(x=10,y=10)
-
-            tabla.heading('ID',text='ID')
-            tabla.column("ID", minwidth=0, width=50, stretch=NO) 
-
-            tabla.heading('Año',text='Año')
-            tabla.column("Año", minwidth=0, width=100, stretch=NO) 
-
-            tabla.heading('Mes',text='Mes')
-            tabla.column('Mes', minwidth=0, width=100, stretch=NO) 
-
-            tabla.heading('Día',text='Día')
-            tabla.column('Día', minwidth=0, width=100, stretch=NO) 
-
-            tabla.heading('Hora',text='Hora')
-            tabla.column('Hora', minwidth=0, width=100, stretch=NO) 
-
-            tabla.heading('Demanda',text='Demanda(KW-H)')    
-            tabla.column("Demanda", minwidth=0, width=100, stretch=NO) 
-
-            ladox = Scrollbar(canvasTblGrafDatos, orient = HORIZONTAL, command= tabla.xview)
-            ladox.place(x=20, y =400) 
-
-            ladoy = Scrollbar(canvasTblGrafDatos, orient =VERTICAL, command = tabla.yview)
-            ladoy.place(x=585,y=15)
-            ladoy.set(20,200)
-
-            tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
-        
-            if opcion.get() == 'Total':
-                data = obtenerTodosDatos().to_numpy().tolist()
-                for fila in data: 
-                    tabla.insert('', 'end', values =fila)
-            else:
-                print('Solo datos parciales')
-                    
-        btnvisualizarDatos = Button(self.frameDatosHistoricos,text= 'Visualizar Datos',
-            font=("Courie",10,'bold'),command=cargarData, width=31, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnvisualizarDatos.place(x=15,y=265)
-
-        figura = Figure(figsize=(6, 4), dpi=100)
-
-        def graficarDemanda():       
-            
-            print('llega',opcion.get())
-            if opcion.get() == 'Total':                              
-                
-                figura.clf()
-                canvasTblGrafDatos=Canvas(self.frameDatosHistoricos, bg= colorBlanco,
-                    width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
-                canvasTblGrafDatos.place(x=300,y=10)
-                a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er            
-                data = dataTotalTime[
-                    dataTotalTime.index.get_loc('2019-02-04 00:00:00'):
-                    dataTotalTime.index.get_loc('2019-02-11 00:00:00')]
-                      
-                a.plot(data, 
-                        color='blue', 
-                        label='Datos Pronosticados')
-                a.set_title('Curva de la demanda histórica',
-                            fontsize = 13,
-                            fontweight = 'bold',
-                            fontfamily='serif')
-                a.legend()
-                #plt.show()
-
-                canvas = FigureCanvasTkAgg(figura, canvasTblGrafDatos)
-                toolbar = NavigationToolbar2Tk(canvas, canvasTblGrafDatos)
-                toolbar.update()
-                #canvas.place(x=50,y=50)
-                canvas.get_tk_widget().pack(fill=BOTH)
-                #canvas.draw () # Tenga en cuenta que el método show está desactualizado, use draw en su lugar
-                          
-                #canvas.get_tk_widget.pack(side = TOP, # get_tk_widget () obtiene _tkcanvas
-                      #fill=BOTH,
-                      #expand=YES)
-
-            elif opcion.get() == 'Parcial':
-                print('Graficar datos parciales')
-            else:
-                print('Esperando')
-                            
-            
-
-        btnGraficar = Button(self.frameDatosHistoricos,text= 'Graficar',
-            font=("Courie",10,'bold'),command=graficarDemanda, width=31, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnGraficar.place(x=15,y=315)
-
-        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfico',
-            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        #btnExportar.place(x=15,y=365)
-
 
         def seleccionarRadioButton():
             #print('Seleccionaste: ',opcion.get())
@@ -354,9 +243,8 @@ class Interfaz:
                 #print('seleccionasteTotal')
                 bloquearCombos()
             else:
-                desbloquearCombos()
-            
-      
+                desbloquearCombos()                    
+        
         # --- Sección de radio buttons
 
         label0 = ttk.Label(canvasDatosHistoricos,width=6,text='Datos', background=colorBlanco, font=("Courie",10,'bold'))
@@ -395,19 +283,14 @@ class Interfaz:
         label5 = ttk.Label(canvasDatosHistoricos,width=6,text='Día', background=colorBlanco, font=("Courie",10))
         label5.place(x=5, y=180)
 
-        combo3 = ttk.Combobox(canvasDatosHistoricos,
-            values=listaDias,
-            width=5)
+        combo3 = ttk.Combobox(canvasDatosHistoricos, values=listaDias, width=5)
         combo3.place(x=45,y=180)
        
         label6 = ttk.Label(canvasDatosHistoricos,width=6,text='Hora', background=colorBlanco, font=("Courie",10))
         label6.place(x=5, y=210)
 
-        combo4 = ttk.Combobox(canvasDatosHistoricos,
-            values=listaHoras,
-            width=5)
+        combo4 = ttk.Combobox(canvasDatosHistoricos, values=listaHoras, width=5)
         combo4.place(x=45,y=210)
-
 
         # Parte derecha - Hasta
         
@@ -457,9 +340,124 @@ class Interfaz:
             combo5.config(state='normal')
             combo6.config(state='normal')
             combo7.config(state='normal')
-            combo8.config(state='normal')
+            combo8.config(state='normal')     
 
-     
+        # 2. Botones de control
+        
+        def cargarData():               
+       
+            canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+            width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasTblGrafDatos.place(x=300,y=10)
+         
+            columns = ('ID','Año', 'Mes', 'Día','Hora','Demanda')                    
+            tabla = ttk.Treeview(canvasTblGrafDatos , height=18, columns=columns, show='headings')
+            tabla.place(x=10,y=10)
+
+            tabla.heading('ID',text='ID')
+            tabla.column("ID", minwidth=0, width=50, stretch=NO) 
+
+            tabla.heading('Año',text='Año')
+            tabla.column("Año", minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Mes',text='Mes')
+            tabla.column('Mes', minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Día',text='Día')
+            tabla.column('Día', minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Hora',text='Hora')
+            tabla.column('Hora', minwidth=0, width=100, stretch=NO) 
+
+            tabla.heading('Demanda',text='Demanda(KW-H)')    
+            tabla.column("Demanda", minwidth=0, width=100, stretch=NO) 
+
+            ladox = Scrollbar(canvasTblGrafDatos, orient = HORIZONTAL, command= tabla.xview)
+            ladox.place(x=20, y =400) 
+
+            ladoy = Scrollbar(canvasTblGrafDatos, orient =VERTICAL, command = tabla.yview)
+            ladoy.place(x=585,y=15)
+            ladoy.set(20,200)
+
+            tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
+        
+            if opcion.get() == 'Total':
+                data = obtenerTodosDatos().to_numpy().tolist()
+                for fila in data: 
+                    tabla.insert('', 'end', values =fila)
+            else:
+                data = obtenerTodosDatos().to_numpy().tolist()
+                for fila in data: 
+                    tabla.insert('', 'end', values =fila)
+                    
+        btnvisualizarDatos = Button(self.frameDatosHistoricos,text= 'Visualizar Datos',
+            font=("Courie",10,'bold'),command=cargarData, width=31, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnvisualizarDatos.place(x=15,y=265)
+
+        
+
+        def graficarDemanda():   
+            figura = Figure(figsize=(6, 4), dpi=100)  
+            data = []
+            if opcion.get() == 'Total':                                                                        
+                data = dataTotalTime[
+                    dataTotalTime.index.get_loc('2015-01-01 00:00:00'):
+                    dataTotalTime.index.get_loc('2019-12-31 23:00:00')].sample(n=100)                                                           
+            elif opcion.get() == 'Parcial':
+                mes = combo2.get()
+                if len(combo2.get()) == 1: mes='0'+combo2.get() 
+                dia = combo3.get()
+                if len(combo3.get()) == 1: dia='0'+combo3.get() 
+                hora = combo4.get()
+                if len(combo4.get()) == 1: hora='0'+combo4.get()
+
+                mesFin = combo6.get()
+                if len(combo6.get()) == 1: mesFin='0'+combo6.get() 
+                diaFin = combo7.get()
+                if len(combo7.get()) == 1: diaFin='0'+combo7.get() 
+                horaFin = combo8.get()
+                if len(combo8.get()) == 1: horaFin='0'+combo8.get()
+                
+                data = dataTotalTime[
+                    dataTotalTime.index.get_loc(combo1.get()+'-'+mes+'-'+dia+
+                        ' '+hora+':00:00'):
+                    dataTotalTime.index.get_loc(combo5.get()+'-'+mesFin+'-'+diaFin+
+                        ' '+horaFin+':00:00')].sample(n=100)
+                
+            else:
+                print('Debes selccionar una fecha para graficar')
+                                         
+            figura.clf()
+            canvasTblGrafDatos=Canvas(self.frameDatosHistoricos, bg= colorBlanco,
+                    width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasTblGrafDatos.place(x=300,y=10)
+            a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er
+            a.plot(data, color='blue', label='Datos Pronosticados')
+            a.set_title('Curva de la demanda histórica', fontsize = 13, fontweight = 'bold', fontfamily='serif')
+            a.legend()
+
+            canvas = FigureCanvasTkAgg(figura, canvasTblGrafDatos)
+            toolbar = NavigationToolbar2Tk(canvas, canvasTblGrafDatos)
+            toolbar.update()
+    
+            canvas.get_tk_widget().pack(fill=BOTH)
+             
+            
+
+        btnGraficar = Button(self.frameDatosHistoricos,text= 'Graficar',
+            font=("Courie",10,'bold'),command=graficarDemanda, width=31, height=2, 
+            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        btnGraficar.place(x=15,y=315)
+
+        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfico',
+            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
+            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
+        #btnExportar.place(x=15,y=365)
+
+
+    
+      
     
 
 
@@ -579,19 +577,7 @@ class Interfaz:
             font=("Courie",10,'bold'),command=entrenarLSTM, width=31, height=2, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnEntrenar.place(x=15,y=265)
-
-        #btnGraficar = Button(self.frameEntrenamientoRed,text= 'Exportar Gráfica',
-            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        #btnGraficar.place(x=15,y=315)
-
-        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfica\nentrenamientp',
-            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        #btnExportar.place(x=15,y=365)
-
-
-
+    
 
 
 # 3.  ---------------  Elementos Frame Predicción ---------------------------- #
