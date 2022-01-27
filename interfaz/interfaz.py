@@ -21,11 +21,12 @@ import matplotlib as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
+#from interfaz.utilidades import obtenerDatosDemandaIntervalo
 
 
 # Nuestros módulos
-from utilidades import obtenerTodosDatos
-from redNeuronal import NN_LSTM
+from utilidades import obtenerTodosDatos, obtenerDatosDemandaIntervalo, generarIntervaloFecha
+from redNeuronal import NN_LSTM, predecirFecha
 
 # Colores
 global colorBlanco
@@ -111,14 +112,14 @@ def cargarImg(root, file, size: tuple, place: tuple):
 class Interfaz:
 
     def __init__(self):
-        #self.ventana = Tk()
-        #self.dibujar()
         
         self.frameDatosHistoricos = None       
         self.frameEntrenamientoRed = None
         self.framePrediccion = None
-        self.dibujar()
-       
+        self.modelo = None
+        self.predicciones = None
+        self.prediccionesTabla = None
+        self.dibujar()       
 
     def nada(self):
         pass
@@ -228,6 +229,7 @@ class Interfaz:
         canvasDatosHistoricos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
          width = 250, height =240, bd =0, highlightthickness=2, highlightbackground="white")
         canvasDatosHistoricos.place(x=15,y=10)
+
         global canvasTblGrafDatos
         canvasTblGrafDatos = Canvas(self.frameDatosHistoricos, bg= colorBlanco,
          width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
@@ -386,7 +388,23 @@ class Interfaz:
                 for fila in data: 
                     tabla.insert('', 'end', values =fila)
             else:
-                data = obtenerTodosDatos().to_numpy().tolist()
+                mes = combo2.get()
+                #if len(combo2.get()) == 1: mes='0'+combo2.get() 
+                dia = combo3.get()
+                #if len(combo3.get()) == 1: dia='0'+combo3.get() 
+                hora = combo4.get()
+                #if len(combo4.get()) == 1: hora='0'+combo4.get()
+
+                mesFin = combo6.get()
+                #if len(combo6.get()) == 1: mesFin='0'+combo6.get() 
+                diaFin = combo7.get()
+                #if len(combo7.get()) == 1: diaFin='0'+combo7.get() 
+                horaFin = combo8.get()
+                #if len(combo8.get()) == 1: horaFin='0'+combo8.get()
+                
+                fechaInicio = combo1.get()+'-'+mes+'-'+dia+'-'+hora
+                fechaFin = combo5.get()+'-'+mesFin+'-'+diaFin+'-'+horaFin
+                data = obtenerDatosDemandaIntervalo(fechaInicio, fechaFin).to_numpy().tolist()
                 for fila in data: 
                     tabla.insert('', 'end', values =fila)
                     
@@ -403,7 +421,7 @@ class Interfaz:
             if opcion.get() == 'Total':                                                                        
                 data = dataTotalTime[
                     dataTotalTime.index.get_loc('2015-01-01 00:00:00'):
-                    dataTotalTime.index.get_loc('2019-12-31 23:00:00')].sample(n=100)                                                           
+                    dataTotalTime.index.get_loc('2019-12-31 23:00:00')]                                                          
             elif opcion.get() == 'Parcial':
                 mes = combo2.get()
                 if len(combo2.get()) == 1: mes='0'+combo2.get() 
@@ -423,10 +441,12 @@ class Interfaz:
                     dataTotalTime.index.get_loc(combo1.get()+'-'+mes+'-'+dia+
                         ' '+hora+':00:00'):
                     dataTotalTime.index.get_loc(combo5.get()+'-'+mesFin+'-'+diaFin+
-                        ' '+horaFin+':00:00')].sample(n=100)
+                        ' '+horaFin+':00:00')]
                 
             else:
                 print('Debes selccionar una fecha para graficar')
+
+            if data.shape[0]>200: data = data.sample(n=100)
                                          
             figura.clf()
             canvasTblGrafDatos=Canvas(self.frameDatosHistoricos, bg= colorBlanco,
@@ -450,17 +470,7 @@ class Interfaz:
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnGraficar.place(x=15,y=315)
 
-        #btnExportar = Button(self.frameDatosHistoricos,text= 'Exportar gráfico',
-            #font=("Courie",10,'bold'),command=self.nada, width=31, height=2, 
-            #bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        #btnExportar.place(x=15,y=365)
-
-
-    
       
-    
-
-
 
 # ---------------------------------------------------------------------------------#
 # ---------------------------------------------------------------------------------#
@@ -471,7 +481,7 @@ class Interfaz:
         # 1. Canvas de controles
         canvasEntrenamiento = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
          width = 250, height =240, bd =0, highlightthickness=2, highlightbackground="white")
-        canvasEntrenamiento.place(x=15,y=10)     
+        canvasEntrenamiento.place(x=15,y=10)                 
 
          # --- Sección de controles
 
@@ -517,8 +527,8 @@ class Interfaz:
             neuronas = int(entryNeuronas.get())
             epocas = int(entryEpocas.get())
             model, history = NN_LSTM(optimizador, neuronas, epocas)
-            print(model)
-            print(history)
+            self.modelo = model
+            #print(history)
 
             #loss
             canvasGrfEntrenamiento = Canvas(self.frameEntrenamientoRed, bg= colorBlanco,
@@ -579,7 +589,10 @@ class Interfaz:
         btnEntrenar.place(x=15,y=265)
     
 
-
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # 3.  ---------------  Elementos Frame Predicción ---------------------------- #
 # Usa desde el combox número 10
 
@@ -589,6 +602,10 @@ class Interfaz:
          width = 250, height =300, bd =0, highlightthickness=2, highlightbackground="white")
         canvasPrediccion.place(x=15,y=10)
 
+        global canvasTblGrafPredict
+        canvasTblGrafPredict = Canvas(self.framePrediccion, bg= colorBlanco,
+         width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+        canvasTblGrafPredict.place(x=300,y=10)
      
           # -- Encabezados de predicción
 
@@ -615,17 +632,13 @@ class Interfaz:
         label5 = ttk.Label(canvasPrediccion,width=6,text='Día', background=colorBlanco, font=("Courie",10))
         label5.place(x=5, y=100)
 
-        combo12 = ttk.Combobox(canvasPrediccion,
-            values=listaDias,
-            width=5)
+        combo12 = ttk.Combobox(canvasPrediccion, values=listaDias, width=5)
         combo12.place(x=45,y=100)
        
         label6 = ttk.Label(canvasPrediccion,width=6,text='Hora', background=colorBlanco, font=("Courie",10))
         label6.place(x=5, y=130)
 
-        combo13 = ttk.Combobox(canvasPrediccion,
-            values=listaHoras,
-            width=5)
+        combo13 = ttk.Combobox(canvasPrediccion, values=listaHoras, width=5)
         combo13.place(x=45,y=130)
 
 
@@ -646,9 +659,7 @@ class Interfaz:
         label5 = ttk.Label(canvasPrediccion,width=6,text='Día', background=colorBlanco, font=("Courie",10))
         label5.place(x=125, y=100)
 
-        combo16 = ttk.Combobox(canvasPrediccion,
-            values=listaDias,
-            width=5)
+        combo16 = ttk.Combobox(canvasPrediccion,values=listaDias,width=5)
         combo16.place(x=165,y=100)
        
         label6 = ttk.Label(canvasPrediccion,width=6,text='Hora', background=colorBlanco, font=("Courie",10))
@@ -701,34 +712,117 @@ class Interfaz:
         labelRespuesta = ttk.Label(canvasPrediccion,width=6,text='0', background=colorCeleste, font=("Courie",10))
         labelRespuesta.place(x=155, y=245)
 
+        # --------------
+
+        def graficarTabla():                      
+            canvasTblGrafPredict = Canvas(self.framePrediccion, bg= colorBlanco,
+            width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasTblGrafPredict.place(x=300,y=10)
+         
+            columns = ('Fecha', 'Demanda')                    
+            tabla = ttk.Treeview(canvasTblGrafPredict , height=18, columns=columns, show='headings')
+            tabla.place(x=10,y=10)
+
+            tabla.heading('Fecha',text='Fecha')
+            tabla.column("Fecha", minwidth=0, width=300, stretch=NO)     
+
+            tabla.heading('Demanda',text='Demanda(KW-H)')    
+            tabla.column("Demanda", minwidth=0, width=300, stretch=NO) 
+
+            ladox = Scrollbar(canvasTblGrafPredict, orient = HORIZONTAL, command= tabla.xview)
+            ladox.place(x=20, y =400) 
+
+            ladoy = Scrollbar(canvasTblGrafPredict, orient =VERTICAL, command = tabla.yview)
+            ladoy.place(x=585,y=15)
+            ladoy.set(20,200)
+
+            tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
+            
+            data = self.prediccionesTabla.to_numpy().tolist()
+            for fila in data: 
+                tabla.insert('', 'end', values =fila)
+
+        def graficarPrediccion():   
+            figura = Figure(figsize=(6, 4), dpi=100)  
+            data = self.predicciones
+
+            if data.shape[0]>200: data = data.sample(n=100)
+                                         
+            figura.clf()
+            canvasTblGrafPredict=Canvas(self.framePrediccion, bg= colorBlanco,
+                    width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
+            canvasTblGrafPredict.place(x=300,y=10)
+            a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er
+            a.plot(data, color='blue', label='Datos Pronosticados')
+            a.set_title('Curva predicción demanda', fontsize = 13, fontweight = 'bold', fontfamily='serif')
+            a.legend()
+
+            canvas = FigureCanvasTkAgg(figura, canvasTblGrafPredict)
+            toolbar = NavigationToolbar2Tk(canvas, canvasTblGrafPredict)
+            toolbar.update()
+    
+            canvas.get_tk_widget().pack(fill=BOTH)
+
+
+        def predecir():
+            mes = combo11.get()
+            if len(combo11.get()) == 1: mes='0'+combo11.get() 
+            dia = combo12.get()
+            if len(combo12.get()) == 1: dia='0'+combo12.get() 
+            hora = combo13.get()          
+
+            mesFin = combo15.get()
+            if len(combo15.get()) == 1: mesFin='0'+combo15.get() 
+            diaFin = combo7.get()
+            if len(combo16.get()) == 1: diaFin='0'+combo16.get() 
+            horaFin = combo19.get()            
+            
+            fechaInicioPredict = combo10.get()+'-'+mes+'-'+dia+' '+hora+':00:00'
+            fechaFinPredict = combo14.get()+'-'+mesFin+'-'+diaFin+' '+horaFin+':00:00'
+
+            print(fechaInicioPredict)
+            print(fechaFinPredict)
+
+            listaPrediccion = predecirFecha(fechaInicioPredict,fechaFinPredict,self.modelo)
+            listaFechas = generarIntervaloFecha(fechaInicioPredict, fechaFinPredict)
+            print(listaFechas)
+            print(len(listaPrediccion))
+            print(len(listaFechas))
+            
+            print(listaPrediccion)
+            dataPrediccion = pd.DataFrame({                
+                'Prediccion': list(np.reshape(listaPrediccion,(listaPrediccion.shape[0]))),
+            },  index= listaFechas)
+
+
+            self.predicciones = dataPrediccion
+            self.prediccionesTabla = pd.DataFrame({                
+                'Fecha': listaFechas,
+                'Prediccion': list(np.reshape(listaPrediccion,(listaPrediccion.shape[0]))),
+            })
+            dataPrediccion.to_csv('prediccion.csv')
+            
+                  
 
          # 2. Botones de control
 
         btnGraficar = Button(self.framePrediccion,text= 'Predecir demanda',
-            font=("Courie",10,'bold'),command=self.nada, width=31, height=1, 
+            font=("Courie",10,'bold'),command=predecir, width=31, height=1, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnGraficar.place(x=15,y=320) 
         
         btnGraficaPredict = Button(self.framePrediccion,text= 'Grafica',
-            font=("Courie",10,'bold'),command=self.nada, width=14, height=1, 
+            font=("Courie",10,'bold'),command=graficarPrediccion, width=14, height=1, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnGraficaPredict.place(x=15,y=355)
         
         btnTablaPredict = Button(self.framePrediccion,text= 'Tabla',
-            font=("Courie",10,'bold'),command=self.nada, width=14, height=1, 
+            font=("Courie",10,'bold'),command=graficarTabla, width=14, height=1, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
         btnTablaPredict.place(x=150,y=355)
 
-        btnExportarGraficaPredict = Button(self.framePrediccion,text= 'Exportar\nGrafica',
-            font=("Courie",10,'bold'),command=self.nada, width=14, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnExportarGraficaPredict.place(x=15,y=390)
+        # --------------------------------------------------------
         
-        btnExportarTablaPredict = Button(self.framePrediccion,text= 'Exportar\nTabla',
-            font=("Courie",10,'bold'),command=self.nada, width=14, height=2, 
-            bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnExportarTablaPredict.place(x=150,y=390)
-
         
     #Ejecución
         ventana.mainloop()          

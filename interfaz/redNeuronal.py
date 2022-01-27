@@ -99,3 +99,38 @@ def predDataTest(modelo):
     prediccion = modelo.predict(X_test)
     prediccion = sc.inverse_transform(prediccion)
     return prediccion
+
+
+def predecirFecha(fecha_inicio, fechaFin, model):
+    time_step = 60
+    #Se debe validar que fecha_inicio no sea menor a esta
+    fechaInicio_real =  str(data_test[time_step: time_step+1].index[0]) #2019-02-03 12:00:00
+    fechaFin = datetime.strptime(fechaFin, "%Y-%m-%d %H:%M:%S")
+    fechaInicio_real = datetime.strptime(fechaInicio_real, "%Y-%m-%d %H:%M:%S")
+    fecha_inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d %H:%M:%S")
+    
+    diferencia = fechaFin - fechaInicio_real
+    total_horas = diferencia.days*24 + diferencia.seconds/3600
+    hora_inicio = fechaFin - fecha_inicio
+    hora_inicio = hora_inicio.days*24 + hora_inicio.seconds/3600
+    predic_final = []
+    data_inicial = data_test[:time_step]
+    data_inicial = sc.transform(data_inicial)
+    while(total_horas >0):
+        X_test = []
+        X_test.append(data_inicial)
+        X_test = np.array(X_test)
+        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+        X_test.shape #(totaldatos, time_step, 1) - (1, 60, 1)
+        # data_inicial.shape
+        predic = model.predict(X_test)
+        predic_final.append(predic)
+        data_inicial = np.append(data_inicial, predic, axis=0)
+        data_inicial = data_inicial[1:]
+        total_horas = total_horas - 1
+        print("Quedan {} horas por predecir...".format(total_horas))
+    predic_final = np.array(predic_final)
+    predic_final = np.reshape(predic_final, (predic_final.shape[0], predic_final.shape[1]))
+    predic_final = sc.inverse_transform(predic_final)
+    print(predic_final.shape)
+    return predic_final[-int(hora_inicio):] #Filtra que sean los valores de fecha_inicio
