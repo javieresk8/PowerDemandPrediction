@@ -28,6 +28,8 @@ from matplotlib.figure import Figure
 from utilidades import obtenerTodosDatos, obtenerDatosDemandaIntervalo, generarIntervaloFecha
 from redNeuronal import NN_LSTM, predecirFecha
 
+from datetime import datetime, timedelta
+
 # Colores
 global colorBlanco
 colorBlanco = '#F7F7F7'
@@ -59,6 +61,8 @@ posicionFrames = (0,200)
 # Listas de datos para los comboxs
 global listaAnos
 listaAnos = [2015,2016,2017,2018,2019,2020,2021]
+global listaAnosFuturo
+listaAnosFuturo = [2019,2020,2021,2022]
 global listaMeses
 listaMeses = [1,2,3,4,5,6,7,8,9,10,11,12]
 global listaDias
@@ -199,7 +203,7 @@ class Interfaz:
         canvasAutores = Canvas(frameGlobal, bg= colorBlanco, width = 350, height =50, bd =0, highlightthickness=2, highlightbackground=colorNegro)
         canvasAutores.place(x=300,y=75)
 
-        labelAutores = ttk.Label(canvasAutores, text="Autores:\n-Autor1\n-Autor2", background=colorBlanco, font=("Courie",8,'bold'))
+        labelAutores = ttk.Label(canvasAutores, text="Autores:\n-Bastidas Cashicana Wilson Roberto\n-Moya Cabezas Angelo Mauricio ", background=colorBlanco, font=("Courie",8,'bold'))
         labelAutores.place(x=5, y=5)
 
 
@@ -453,7 +457,7 @@ class Interfaz:
                     width = 620, height =420, bd =0, highlightthickness=2, highlightbackground="white")
             canvasTblGrafDatos.place(x=300,y=10)
             a = figura.add_subplot (111) # Agregar subgrafo: 1 fila, 1 columna, 1er
-            a.plot(data, color='blue', label='Datos Pronosticados')
+            a.plot(data, color='blue', label='Datos historicos')
             a.set_title('Curva de la demanda histórica', fontsize = 13, fontweight = 'bold', fontfamily='serif')
             a.legend()
 
@@ -620,7 +624,7 @@ class Interfaz:
         label3 = ttk.Label(canvasPrediccion,width=6,text='Año', background=colorBlanco, font=("Courie",10))
         label3.place(x=5, y=40)
 
-        combo10 = ttk.Combobox(canvasPrediccion,values=listaAnos, width=5)
+        combo10 = ttk.Combobox(canvasPrediccion,values=listaAnosFuturo, width=5)
         combo10.place(x=45,y=40)
 
         label4 = ttk.Label(canvasPrediccion,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
@@ -647,7 +651,7 @@ class Interfaz:
         label7 = ttk.Label(canvasPrediccion,width=6,text='Año', background=colorBlanco, font=("Courie",10))
         label7.place(x=125, y=40)
 
-        combo14 = ttk.Combobox(canvasPrediccion,values=listaAnos, width=5)
+        combo14 = ttk.Combobox(canvasPrediccion,values=listaAnosFuturo, width=5)
         combo14.place(x=165,y=40)
 
         label4 = ttk.Label(canvasPrediccion,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
@@ -679,7 +683,7 @@ class Interfaz:
         label3 = ttk.Label(canvasPrediccion,width=6,text='Año', background=colorBlanco, font=("Courie",10))
         label3.place(x=5, y=190)
 
-        combo20 = ttk.Combobox(canvasPrediccion,values=listaAnos, width=5)
+        combo20 = ttk.Combobox(canvasPrediccion,values=listaAnosFuturo, width=5)
         combo20.place(x=45,y=190)
 
         label4 = ttk.Label(canvasPrediccion,width=6,text='Mes', background=colorBlanco, font=("Courie",10))
@@ -704,12 +708,7 @@ class Interfaz:
             width=5)
         combo23.place(x=45,y=280)
 
-        btnCalcular = Button(canvasPrediccion,text= 'Calcular',
-            font=("Courie",10,'bold'),command=self.nada, width=10, height=1, 
-            bd= 2,bg=colorAmarillo, relief=GROOVE, highlightbackground=colorAzul)
-        btnCalcular.place(x=140,y=200)
-
-        labelRespuesta = ttk.Label(canvasPrediccion,width=6,text='0', background=colorCeleste, font=("Courie",10))
+        labelRespuesta = ttk.Label(canvasPrediccion,width=12,text='0', background=colorCeleste, font=("Courie",10))
         labelRespuesta.place(x=155, y=245)
 
         # --------------
@@ -802,7 +801,19 @@ class Interfaz:
             })
             dataPrediccion.to_csv('prediccion.csv')
             
-                  
+
+        def predecirEspecifico():
+            mes = combo21.get()
+            if len(combo11.get()) == 1: mes='0'+combo11.get() 
+            dia = combo22.get()
+            if len(combo12.get()) == 1: dia='0'+combo12.get() 
+            hora = combo23.get()          
+
+            fechaInicioPredict = combo20.get()+'-'+mes+'-'+dia+' '+hora+':00:00'
+            FechaFinPredict = datetime.strptime(fechaInicioPredict, "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
+            resultado = predecirFecha( fechaInicioPredict, str(FechaFinPredict), self.modelo)            
+            
+            labelRespuesta.config(text =str(resultado[0][0]))
 
          # 2. Botones de control
 
@@ -819,9 +830,12 @@ class Interfaz:
         btnTablaPredict = Button(self.framePrediccion,text= 'Tabla',
             font=("Courie",10,'bold'),command=graficarTabla, width=14, height=1, 
             bd= 2,bg=colorBlanco, relief=GROOVE, highlightbackground=colorAzul)
-        btnTablaPredict.place(x=150,y=355)
+        btnTablaPredict.place(x=150,y=355)        
 
-        # --------------------------------------------------------
+        btnCalcular = Button(canvasPrediccion,text= 'Calcular',
+            font=("Courie",10,'bold'),command=predecirEspecifico, width=10, height=1, 
+            bd= 2,bg=colorAmarillo, relief=GROOVE, highlightbackground=colorAzul)
+        btnCalcular.place(x=140,y=200)
         
         
     #Ejecución
