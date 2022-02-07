@@ -86,51 +86,60 @@ def NN_LSTM(optimizador, neuronas, epocas):
     print('\nX sahepDespuesFit',X_train.shape)
     return model, history
 
-def predDataTest(modelo):
-    x_test  = data_test.values
-    x_test = sc.transform(x_test)
-    # # x_test
-    X_test = []
-    for i in range(time_step, len(x_test)):
-        X_test.append(x_test[i-time_step: i, 0])
-    X_test= np.array(X_test)
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-    X_test.shape
-    prediccion = modelo.predict(X_test)
-    prediccion = sc.inverse_transform(prediccion)
-    return prediccion
-
-
 def predecirFecha(fecha_inicio, fechaFin, model):
     time_step = 60
     #Se debe validar que fecha_inicio no sea menor a esta
-    fechaInicio_real =  str(data_test[time_step: time_step+1].index[0]) #2019-02-03 12:00:00
+
+    #Transforma texto a datetime
+    fechaInicio_real =  str(data_train[-time_step:].index[0]) #2019-02-03 12:00:00
     fechaFin = datetime.strptime(fechaFin, "%Y-%m-%d %H:%M:%S")
     fechaInicio_real = datetime.strptime(fechaInicio_real, "%Y-%m-%d %H:%M:%S")
     fecha_inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d %H:%M:%S")
-    
+
+    #Obtiene el número de horas que existen entre el fin y le fecha inicio real
     diferencia = fechaFin - fechaInicio_real
     total_horas = diferencia.days*24 + diferencia.seconds/3600
+
+    #Obtiene cual es la hora de inicio que debemos devolver 
     hora_inicio = fechaFin - fecha_inicio
     hora_inicio = hora_inicio.days*24 + hora_inicio.seconds/3600
+
+    #Obtenemos los 60 primeros datos que nos ayudaran en la prediccion
     predic_final = []
     data_inicial = data_test[:time_step]
     data_inicial = sc.transform(data_inicial)
-    while(total_horas >0):
-        X_test = []
-        X_test.append(data_inicial)
-        X_test = np.array(X_test)
-        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-        X_test.shape #(totaldatos, time_step, 1) - (1, 60, 1)
-        # data_inicial.shape
-        predic = model.predict(X_test)
-        predic_final.append(predic)
-        data_inicial = np.append(data_inicial, predic, axis=0)
-        data_inicial = data_inicial[1:]
-        total_horas = total_horas - 1
-        print("Quedan {} horas por predecir...".format(total_horas))
+    data_resp = data_test[time_step:]
+    data_resp = sc.transform(data_resp)
+
+    #Iteramos hasta que tengamos la prediccion de todas las horas 
+    pos =0
+
+    for i in range(int(total_horas)):
+      X_test = []
+      X_test.append(data_inicial)
+      X_test = np.array(X_test)
+      X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+      X_test.shape #(totaldatos, time_step, 1) - (1, 60, 1)
+      # data_inicial.shape
+      predic = model.predict(X_test)
+      predic_final.append(predic)
+
+      #Buscamos reemplazar el ultimo valor de la data de entrada, pero  
+      #esto debe hacerse a modo de PILA 
+
+      #Eliminamos el primer elemento 
+      data_inicial = data_inicial[1:]
+
+      #Insertamos al final (ultimo) la prediccion en el arreglo
+      data_inicial = np.append(data_inicial, data_resp[i])
+      #print("Quedan {} horas por predecir... | Predicción actual {} | Data cambiada: {}".format(total_horas, predic, data_inicial[:]))
+      print('Quedan {} horas por predecir...'.format(total_horas))
+      total_horas = total_horas - 1
+    # while(total_horas >0):
+        
     predic_final = np.array(predic_final)
     predic_final = np.reshape(predic_final, (predic_final.shape[0], predic_final.shape[1]))
     predic_final = sc.inverse_transform(predic_final)
-    print(predic_final.shape)
+    print("VALORES OBTENIDOS=========")
+    print(predic_final)
     return predic_final[-int(hora_inicio):] #Filtra que sean los valores de fecha_inicio

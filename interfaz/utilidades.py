@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
+
 def obtenerDatosDemandaIntervalo(fechaInicio:str, fechaFin:str):
     data = pd.read_csv('../data/data_total.csv',skiprows=0,index_col=None,usecols=[0,1,2,4,5,6]) 
     print(data)
@@ -23,6 +24,7 @@ def obtenerTodosDatos():
     data = pd.read_csv('../data/data_total.csv',skiprows=0,index_col=None,usecols=[0,1,2,4,5,6])
     #print(data)
     return data
+
 
 def generarIntervaloFecha(fechaInicio, fechaFin):
     fechaInicio = datetime.strptime(fechaInicio, "%Y-%m-%d %H:%M:%S")
