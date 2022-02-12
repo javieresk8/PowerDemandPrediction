@@ -132,13 +132,14 @@ def predecirFecha(fecha_inicio, fechaFin, model):
 
       #Insertamos al final (ultimo) la prediccion en el arreglo
       data_inicial = np.append(data_inicial, data_resp[i%len(data_resp)])
-      print("Quedan {} horas por predecir... | Predicción actual {} | Data cambiada: {}".format(total_horas, predic, data_inicial[:]))
+      #print("Quedan {} horas por predecir... | Predicción actual {} | Data cambiada: {}".format(total_horas, predic, data_inicial[:]))
+      print('Quedan por predecir',total_horas)
       total_horas = total_horas - 1
     # while(total_horas >0):
         
     predic_final = np.array(predic_final)
     predic_final = np.reshape(predic_final, (predic_final.shape[0], predic_final.shape[1]))
     predic_final = sc.inverse_transform(predic_final)
-    print("VALORES OBTENIDOS=========")
-    print(predic_final)
+    #print("VALORES OBTENIDOS=========")
+    #print(predic_final)
     return predic_final[-int(hora_inicio):] #Filtra que sean los valores de fecha_inicio
