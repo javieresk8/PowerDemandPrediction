@@ -784,6 +784,7 @@ class Interfaz:
 
             listaPrediccion = predecirFecha(fechaInicioPredict,fechaFinPredict,self.modelo)
             listaFechas = generarIntervaloFecha(fechaInicioPredict, fechaFinPredict)
+            listaPrediccion = listaPrediccion[0:len(listaFechas)]
             print(listaFechas)
             print(len(listaPrediccion))
             print(len(listaFechas))

@@ -131,9 +131,8 @@ def predecirFecha(fecha_inicio, fechaFin, model):
       data_inicial = data_inicial[1:]
 
       #Insertamos al final (ultimo) la prediccion en el arreglo
-      data_inicial = np.append(data_inicial, data_resp[i])
-      #print("Quedan {} horas por predecir... | Predicción actual {} | Data cambiada: {}".format(total_horas, predic, data_inicial[:]))
-      print('Quedan {} horas por predecir...'.format(total_horas))
+      data_inicial = np.append(data_inicial, data_resp[i%len(data_resp)])
+      print("Quedan {} horas por predecir... | Predicción actual {} | Data cambiada: {}".format(total_horas, predic, data_inicial[:]))
       total_horas = total_horas - 1
     # while(total_horas >0):
         
